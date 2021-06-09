@@ -84,9 +84,113 @@ private:
   }
 
   bool compareTupleWithPattern(struct Tuple tuple, struct Pattern pattern){
-
-    // TODO
-
+    if (tuple.tel_amount != pattern.pel_amount) {
+        return false;
+    }
+    for (int i = 0; i < pattern.pel_amount; ++i) {
+        if (pattern.pel[i].type != tuple.tel[i].type) {
+            return false;
+        }
+        switch (pattern.pel[i].condition) {
+        case 0: // ==
+            switch (pattern.pel[i].type) {
+            case 0: // integer
+                if (! (tuple.tel[i].value.i == pattern.pel[i].value.i) ) {
+                    return false;
+                }
+                break;
+            case 1: // string
+                if ( strcmp(tuple.tel[i].value.s, pattern.pel[i].value.s) ) {
+                    return false;
+                }
+                break;
+            case 2: // float
+                if (! (tuple.tel[i].value.f == pattern.pel[i].value.f) ) {
+                    return false;
+                }
+                break;
+            }
+        case 1: // <
+            switch (pattern.pel[i].type) {
+            case 0: // integer
+                if (! (tuple.tel[i].value.i < pattern.pel[i].value.i) ) {
+                    return false;
+                }
+                break;
+            case 1: // string
+                if (! (strcmp(tuple.tel[i].value.s, pattern.pel[i].value.s) < 0) ) {
+                    return false;
+                }
+                break;
+            case 2: // float
+                if (!(tuple.tel[i].value.f < pattern.pel[i].value.f)) {
+                    return false;
+                }
+                break;
+            }
+            break;
+        case 2: // <=
+            switch (pattern.pel[i].type) {
+            case 0: // integer
+                if (! (tuple.tel[i].value.i <= pattern.pel[i].value.i) ) {
+                    return false;
+                }
+                break;
+            case 1: // string
+                if (! (strcmp(tuple.tel[i].value.s, pattern.pel[i].value.s) <= 0) ) {
+                    return false;
+                }
+                break;
+            case 2: // float
+                if (! (tuple.tel[i].value.f <= pattern.pel[i].value.f) ) {
+                    return false;
+                }
+                break;
+            }
+            break;
+        case 3: // >
+            switch (pattern.pel[i].type) {
+            case 0: // integer
+                if (! (tuple.tel[i].value.i > pattern.pel[i].value.i) ) {
+                    return false;
+                }
+                break;
+            case 1: // string
+                if (! (strcmp(tuple.tel[i].value.s, pattern.pel[i].value.s) > 0) ) {
+                    return false;
+                }
+                break;
+            case 2: // float
+                if (! (tuple.tel[i].value.f > pattern.pel[i].value.f) ) {
+                    return false;
+                }
+                break;
+            }
+            break;
+        case 4: // >=
+            switch (pattern.pel[i].type) {
+            case 0: // integer
+                if (! (tuple.tel[i].value.i >= pattern.pel[i].value.i) ) {
+                    return false;
+                }
+                break;
+            case 1: // string
+                if (! (strcmp(tuple.tel[i].value.s, pattern.pel[i].value.s) >= 0) ) {
+                    return false;
+                }
+                break;
+            case 2: // float
+                if (! (tuple.tel[i].value.f >= pattern.pel[i].value.f) ) {
+                    return false;
+                }
+                break;
+            }
+            break;
+        case 5: // *
+            break;
+        }
+    }
+    return true;
   }
 
   void returnTuple(key_t client_key, struct Tuple tuple){
