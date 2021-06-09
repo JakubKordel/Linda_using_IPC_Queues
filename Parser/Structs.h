@@ -17,6 +17,7 @@ struct TupleElement
 struct Tuple
 {
     TupleElement tel[20];
+    int tel_amount;
 };
 
 struct PatternElement
@@ -29,6 +30,7 @@ struct PatternElement
 struct Pattern
 {
     PatternElement pel[20];
+    int pel_amount;
 };
 
 union Request

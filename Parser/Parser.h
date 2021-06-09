@@ -10,10 +10,10 @@ private:
     Lexer lexer;
     Request parse_tuple();
     Request parse_pattern();
-    void throw_parsing_error(std::string);
 public:
-    Parser(Lexer);
+    explicit Parser(const std::string&);
     Msg parse();
+    static void throw_parsing_error(const std::string& msg, std::pair<int, int> pos);
 };
 
 #endif //UNIX_PROJEKT_PARSER_H

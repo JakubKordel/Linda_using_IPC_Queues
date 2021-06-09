@@ -6,9 +6,10 @@
 
 #define STR_LENGTH 20
 
-Lexer::Lexer(Source src)
+Lexer::Lexer(const std::string& code)
 {
-    source = src;
+    source = Source(code);
+    next_token();
 }
 
 Token Lexer::next_token()
@@ -19,7 +20,7 @@ Token Lexer::next_token()
     position = source.get_position();
     if(source.get_character() == '\0')
     {
-        token = Token(addons::TokenType::EOF, position);
+        token = Token(addons::TokenType::END_OF_FILE, position);
         return token;
     }
 
@@ -50,9 +51,11 @@ bool Lexer::build_keyword()
             name << source.get_character();
 
         std::string keyword = name.str();
-        if((source.get_character() == ':' || source.get_character() == '(') && addons::keywordMap.find(keyword))
+        auto it = addons::keywordMap.find(keyword.c_str());
+        if((source.get_character() == ':' || source.get_character() == '(' || isspace(source.get_character())) &&
+            it != addons::keywordMap.end())
         {
-            token = Token(addons::keywordMap[keyword], position);
+            token = Token(it->second, position);
             return true;
         }
         else
@@ -72,7 +75,7 @@ bool Lexer::build_number()
     }
 
     Token number = build_float();
-    if(number.get_type() == addons::TokenType::EOF)
+    if(number.get_type() == addons::TokenType::END_OF_FILE)
     {
         if(negative)
         {
@@ -112,7 +115,7 @@ bool Lexer::build_number()
 
 Token Lexer::build_float()
 {
-    float number = (float)build_integer();
+    auto number = (float)build_integer();
     bool is_exp = false;
     bool dot = false;
     bool after_dot = false;
@@ -139,11 +142,11 @@ Token Lexer::build_float()
 
     if(source.get_character() == 'e')
     {
-        bool is_exp = true;
+        is_exp = true;
         if(!after_dot && number == -1.0f)
         {
             source.next_character();
-            return Token(addons::TokenType::UNDEFINED, position);   // .e
+            return {addons::TokenType::UNDEFINED, position};   // .e
         }
 
         bool minus = false;
@@ -156,36 +159,36 @@ Token Lexer::build_float()
         }
 
         int value = build_integer();
-        if(value != -1.0f)
+        if(value != -1)
         {
             if(minus)
-                number /= pow(10.0f, (float)value);
+                number /= std::pow(10.0f, (float)value);
             else
-                number *= pow(10.0f, (float)value);
+                number *= std::pow(10.0f, (float)value);
         }
         else
-            return Token(addons::TokenType::UNDEFINED, position);   // {number}e[+/-]{not-a-number}
+            return {addons::TokenType::UNDEFINED, position};   // {number}e[+/-]{not-a-number}
     }
 
     if(is_exp)
-        return Token(addons::TokenType::FLOAT_LITERAL, position, number);  // [point] float with exponent
+        return {addons::TokenType::FLOAT_LITERAL, position, number};  // [point] float with exponent
     else
     {
         if(after_dot)
-            return Token(addons::TokenType::FLOAT_LITERAL, position, number);  // point float ([int].{number})
-        else if(!after_dot && !dot)
+            return {addons::TokenType::FLOAT_LITERAL, position, number};  // point float ([int].{number})
+        else if(!dot)
         {
             if(number != -1.0f)
-                return Token(addons::TokenType::INT_LITERAL, position, (int)number); // integer
+                return {addons::TokenType::INT_LITERAL, position, (int)number}; // integer
             else
-                return Token(addons::TokenType::EOF, position)  // no match
+                return {addons::TokenType::END_OF_FILE, position};  // no match
         }
-        else if(!after_dot && dot)
+        else
         {
             if(number != -1.0f)
-                return Token(addons::TokenType::FLOAT_LITERAL, position, number);   // point float (int.)
+                return {addons::TokenType::FLOAT_LITERAL, position, number};   // point float (int.)
             else
-                return Token(addons::TokenType::UNDEFINED, position);   // .
+                return {addons::TokenType::UNDEFINED, position};   // .
         }
     }
 }
@@ -227,8 +230,8 @@ bool Lexer::build_string()
                             std::find(addons::start_operators.begin(), addons::start_operators.end(),
                                       source.get_character()) != addons::start_operators.end())
                 {
-                    if(strlen(content.c_str()) < STR_LENGTH)
-                        token = Token(addons::TokenType::STR_LITERAL, position, content.str());
+                    if(strlen(content.str().c_str()) < STR_LENGTH)
+                        token = Token(addons::TokenType::STR_LITERAL, position, content.str().c_str());
                     else
                         extend_undefined();
                 }
@@ -346,4 +349,9 @@ bool Lexer::extend_undefined()
 Token Lexer::get_token()
 {
     return token;
+}
+
+Lexer::Lexer()
+{
+    source = Source();
 }

@@ -8,8 +8,8 @@ class Lexer
 {
 private:
     Source source;
-    Token token;
-    std::pair<int, int> position;
+    Token token{};
+    std::pair<int, int> position{};
     bool build_keyword();
     bool build_number();
     bool build_string();
@@ -18,7 +18,8 @@ private:
     Token build_float();
     bool extend_undefined();
 public:
-    Lexer(Source);
+    explicit Lexer(const std::string&);
+    Lexer();
     Token next_token();
     Token get_token();
 };

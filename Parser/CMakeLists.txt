@@ -12,4 +12,4 @@ add_executable(UNIX_projekt
         Parser.cpp
         Parser.h
         Source.cpp
-        Source.h Token.cpp Token.h Structs.h)
+        Source.h Token.cpp Token.h Structs.h Main.cpp)

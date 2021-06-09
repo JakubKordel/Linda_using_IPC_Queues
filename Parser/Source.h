@@ -2,7 +2,7 @@
 #define UNIX_PROJEKT_SOURCE_H
 
 #include <string>
-#include <stringstream>
+#include <sstream>
 #include <utility>
 
 class Source
@@ -10,12 +10,13 @@ class Source
 private:
     char character;
     std::stringstream program;
-    std:pair<int, int> position;
+    std::pair<int, int> position;
 
 public:
-    Source(std::string);
+    explicit Source(const std::string&);
+    Source();
     char next_character();
-    char get_character();
+    char get_character() const;
     std::pair<int, int> get_position();
 };
 

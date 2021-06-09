@@ -11,21 +11,24 @@ private:
     {
         int i;
         float f;
-        std::string s;
+        char s[20];
     };
 
     addons::TokenType type;
     std::pair<int, int> position;
-    TokenValue value;
+    TokenValue value{};
 
 public:
-    Token(addons::TokenType, std::pair<int, int>, TokenValue);
+    Token(addons::TokenType, std::pair<int, int>, const char*);
+    Token(addons::TokenType, std::pair<int, int>, int);
+    Token(addons::TokenType, std::pair<int, int>, float);
     Token(addons::TokenType, std::pair<int, int>);
+    Token();
     addons::TokenType get_type();
     std::pair<int, int> get_position();
-    int get_value_integer();
-    float get_value_float();
-    std::string get_value_string();
+    int get_value_integer() const;
+    float get_value_float() const;
+    char* get_value_string();
 };
 
 #endif //UNIX_PROJEKT_TOKEN_H

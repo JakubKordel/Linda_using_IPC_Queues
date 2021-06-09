@@ -4,12 +4,13 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstring>
 
 namespace addons
 {
     enum TokenType
     {
-        EOF,
+        END_OF_FILE,
         OUTPUT,
         INPUT,
         READ,
@@ -31,7 +32,16 @@ namespace addons
         UNDEFINED
     };
 
-    const std::map<std::string, TokenType> keywordMap {
+    struct cmp_str
+    {
+        bool operator()(char const *a, char const *b) const
+        {
+            return std::strcmp(a, b) < 0;
+        }
+    };
+
+
+    const std::map<const char*, TokenType, cmp_str> keywordMap {
         {"output", TokenType::OUTPUT},
         {"input", TokenType::INPUT},
         {"read", TokenType::READ},

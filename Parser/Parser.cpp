@@ -2,15 +2,14 @@
 #include <stdexcept>
 #include <cstring>
 
-Parser::Parser(Lexer)
+Parser::Parser(const std::string& code)
 {
-    lexer = Lexer;
-    lexer.next_token();
+    lexer = Lexer(code);
 }
 
 Msg Parser::parse()
 {
-    Msg msg;
+    Msg msg{};
     if(lexer.get_token().get_type() == addons::TokenType::OUTPUT)
     {
         msg.option = 2;
@@ -26,40 +25,44 @@ Msg Parser::parse()
         msg.option = 0;
         msg.req = parse_pattern();
     }
-    else:
-        throw_parsing_error("incorrect operation", lexer.get_token().get_position())
-
-    if(lexer.get_token().get_type() == addons::TokenType::EOF)
-        return msg;
     else
+        throw_parsing_error("incorrect operation", lexer.get_token().get_position());
+
+    if(lexer.next_token().get_type() != addons::TokenType::END_OF_FILE)
         throw_parsing_error("expected EOF", lexer.get_token().get_position());
+
+    return msg;
 }
 
 Request Parser::parse_tuple()
 {
-    Request request;
+    Request request{};
+    request.tuple.tel_amount = 0;
     if(lexer.next_token().get_type() == addons::TokenType::OPEN_PARENTHESIS)
     {
-        for(int i = 0; i < 20; i++)
+        for(auto & i : request.tuple.tel)
         {
-            TupleElement tupleElement;
+            TupleElement tupleElement{};
             if(lexer.next_token().get_type() == addons::TokenType::STR_LITERAL)
             {
-                strcpy(tupleElement.value.s, lexer.get_token().get_value_string().c_str());
+                strcpy(tupleElement.value.s, lexer.get_token().get_value_string());
                 tupleElement.type = 1;
-                request.tuple.tel[i] = tupleElement;
+                i = tupleElement;
+                request.tuple.tel_amount += 1;
             }
             else if(lexer.get_token().get_type() == addons::TokenType::INT_LITERAL)
             {
                 tupleElement.value.i = lexer.get_token().get_value_integer();
                 tupleElement.type = 0;
-                request.tuple.tel[i] = tupleElement;
+                i = tupleElement;
+                request.tuple.tel_amount += 1;
             }
             else if(lexer.get_token().get_type() == addons::TokenType::FLOAT_LITERAL)
             {
                 tupleElement.value.f = lexer.get_token().get_value_float();
                 tupleElement.type = 2;
-                request.tuple.tel[i] = tupleElement;
+                i = tupleElement;
+                request.tuple.tel_amount += 1;
             }
             else
                 throw_parsing_error("expected literal", lexer.get_token().get_position());
@@ -79,12 +82,13 @@ Request Parser::parse_tuple()
 
 Request Parser::parse_pattern()
 {
-    Request request;
+    Request request{};
+    request.pattern.pel_amount = 0;
     if(lexer.next_token().get_type() == addons::TokenType::OPEN_PARENTHESIS)
     {
-        for(int i = 0; i < 20; i++)
+        for(auto & i : request.pattern.pel)
         {
-            PatternElement patternElement;
+            PatternElement patternElement{};
             patternElement.condition = 0;
             if(lexer.next_token().get_type() == addons::TokenType::STRING)
                 patternElement.type = 1;
@@ -120,14 +124,19 @@ Request Parser::parse_pattern()
             }
 
             if(lexer.get_token().get_type() == addons::TokenType::STAR)
+            {
                 patternElement.condition = 5;
+                i = patternElement;
+                request.pattern.pel_amount += 1;
+            }
             else if(lexer.get_token().get_type() == addons::TokenType::STR_LITERAL)
             {
                 if(patternElement.type != 1)
                     throw_parsing_error("expected string literal", lexer.get_token().get_position());
 
-                strcpy(patternElement.value.s, lexer.get_token().get_value_string().c_str());
-                request.pattern.pel[i] = patternElement;
+                strcpy(patternElement.value.s, lexer.get_token().get_value_string());
+                i = patternElement;
+                request.pattern.pel_amount += 1;
             }
             else if(lexer.get_token().get_type() == addons::TokenType::INT_LITERAL)
             {
@@ -135,7 +144,8 @@ Request Parser::parse_pattern()
                     throw_parsing_error("expected int literal", lexer.get_token().get_position());
 
                 patternElement.value.i = lexer.get_token().get_value_integer();
-                request.pattern.pel[i] = patternElement;
+                i = patternElement;
+                request.pattern.pel_amount += 1;
             }
             else if(lexer.get_token().get_type() == addons::TokenType::FLOAT_LITERAL)
             {
@@ -147,7 +157,8 @@ Request Parser::parse_pattern()
                                         lexer.get_token().get_position());
 
                 patternElement.value.f = lexer.get_token().get_value_float();
-                request.pattern.pel[i] = patternElement;
+                i = patternElement;
+                request.pattern.pel_amount += 1;
             }
             else
                 throw_parsing_error("expected condition and/or value", lexer.get_token().get_position());
@@ -156,7 +167,7 @@ Request Parser::parse_pattern()
                 break;
         }
 
-        if(lexer.next_token().get_type() != addons::TokenType::CLOSE_PARENTHESIS)
+        if(lexer.get_token().get_type() != addons::TokenType::CLOSE_PARENTHESIS)
             throw_parsing_error("expected )", lexer.get_token().get_position());
     }
     else
@@ -165,7 +176,7 @@ Request Parser::parse_pattern()
     return request;
 }
 
-void Parser::throw_parsing_error(std::string msg, std::pair<int, int> pos)
+void Parser::throw_parsing_error(const std::string& msg, std::pair<int, int> pos)
 {
     std::string message = "Parsing error - " + msg + " [line=" + std::to_string(pos.first) +
                             ", col=" + std::to_string(pos.second) + "]";
