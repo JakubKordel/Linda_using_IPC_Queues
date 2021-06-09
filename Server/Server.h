@@ -73,7 +73,7 @@ private:
   void handleRequest(struct Msg msg){
       for (auto i = tuplesList.begin(); i < tuplesList.end() ; ++i){
         if (compareTupleWithPattern(*i, msg.req.pattern)){
-          returnTuple(msg.key, *i); //TODO
+          returnTuple(msg.key, *i); 
           if (msg.option == 1) {
             tuplesList.erase(i);
           }
