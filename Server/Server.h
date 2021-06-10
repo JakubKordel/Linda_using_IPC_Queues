@@ -51,6 +51,7 @@ private:
   void handleMsg(struct Msg msg){
 
     if (msg.option == 2) {
+        std::cout << "Pushing back tuple" << std::endl;
         tuplesList.push_back(msg.req.tuple);
         handleNewTuple(msg.req.tuple);
     }
@@ -62,6 +63,7 @@ private:
   void handleNewTuple(struct Tuple tuple){
         for (auto i = unhandledRequests.begin(); i != unhandledRequests.end() ; ++i){
           if (compareTupleWithPattern(tuple, i->req.pattern) ){
+              std::cout << "Returning tuple" << std::endl;
               returnTuple(i->key, tuple);
               unhandledRequests.erase(i);
               if (i->option == 1){ //option input
@@ -74,7 +76,9 @@ private:
 
   void handleRequest(struct Msg msg){
       for (auto i = tuplesList.begin(); i < tuplesList.end() ; ++i){
+        std::cout << "I am comparing tuples" << std::endl;
         if (compareTupleWithPattern(*i, msg.req.pattern)){
+          std::cout << "Returning tuple" << std::endl;
           returnTuple(msg.key, *i);
           if (msg.option == 1) {
             tuplesList.erase(i);
@@ -196,10 +200,11 @@ private:
   }
 
   void returnTuple(key_t client_key, struct Tuple tuple){
-    int client_msgid = msgget(client_key, 0666); //get users input queue
+    int client_msgid = msgget(client_key, 0); //get users input queue
     msgbufTuple msgbuf;
     msgbuf.mtype = 1;
     msgbuf.tuple = tuple;
+    std::cout << "sending msg to client gid: " << client_msgid << std::endl;
     msgsnd(client_msgid, &msgbuf, sizeof(struct msgbufTuple), 0);
   }
 };
