@@ -5,7 +5,7 @@
 int main()
 {
     std::string krotka = "output(1, \"abcd\", 4.5)";
-    std::string wzorzec = "input(integer:1, string:*, float:>=.6)";
+    std::string wzorzec = "input(integer:>=0, string:*, float:*)";
     linda_init();
     std::cout << "Init Linda" << std::endl;
 
