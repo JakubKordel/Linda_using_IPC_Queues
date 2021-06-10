@@ -10,9 +10,13 @@ void linda_output(struct Tuple tuple){
   msg.option = 2;
   msg.req.tuple = tuple;
 
-  key_t key = ftok("keyFile.txt", 0);
+  key_t key = ftok("../Server/keyFile.txt", 0);
   int msgid = msgget(key, 0666);
-  msgsnd(msgid, &msg, sizeof(struct Msg), 0);
+
+  msgbufMsg msgbuffer;
+  msgbuffer.mtype = 1;
+  msgbuffer.msg = msg;
+  msgsnd(msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
 
 }
 
@@ -21,7 +25,7 @@ struct Tuple linda_input(struct Pattern pattern, int timeout){
 
   Tuple tuple;
 
-  key_t client_key = ftok("keyFile.txt", getpid());
+  key_t client_key = ftok("../Server/keyFile.txt", getpid());
   int client_msgid = msgget(client_key, 0666);
 
   Msg msg;
@@ -29,20 +33,27 @@ struct Tuple linda_input(struct Pattern pattern, int timeout){
   msg.req.pattern = pattern;
   msg.key = client_key;
 
-  key_t mainqueue_key = ftok("keyFile.txt", 0);
+  key_t mainqueue_key = ftok("../Server/keyFile.txt", 0);
   int server_msgid = msgget(mainqueue_key, 0666);
 
-  msgsnd(server_msgid, &msg, sizeof(struct Msg), 0);
-  msgrcv(client_msgid, &tuple, sizeof(struct Tuple), 1, 0);
+  msgbufMsg msgbuffer;
+  msgbuffer.mtype = 1;
+  msgbuffer.msg = msg;
 
-  return tuple;
+  msgsnd(server_msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
+
+  msgbufTuple msgbufferTuple;
+  msgrcv(client_msgid, &msgbufferTuple, sizeof(struct msgbufTuple), 1, 0);
+
+
+  return msgbufferTuple.tuple;
 }
 
 struct Tuple linda_read(struct Pattern pattern, int timeout){
 
   Tuple tuple;
 
-  key_t client_key = ftok("keyFile.txt", getpid());
+  key_t client_key = ftok("../Server/keyFile.txt", getpid());
   int client_msgid = msgget(client_key, 0666);
 
   Msg msg;
@@ -50,22 +61,31 @@ struct Tuple linda_read(struct Pattern pattern, int timeout){
   msg.req.pattern = pattern;
   msg.key = client_key;
 
-  key_t mainqueue_key = ftok("keyFile.txt", 0);
+  key_t mainqueue_key = ftok("../Server/keyFile.txt", 0);
   int server_msgid = msgget(mainqueue_key, 0666);
 
-  msgsnd(server_msgid, &msg, sizeof(struct Msg), 0);
-  msgrcv(client_msgid, &tuple, sizeof(struct Tuple), 1, 0);
+  msgbufMsg msgbuffer;
+  msgbuffer.mtype = 1;
+  msgbuffer.msg = msg;
+
+  msgsnd(server_msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
+
+  msgbufTuple msgbufferTuple;
+  msgrcv(client_msgid, &msgbufferTuple, sizeof(struct msgbufTuple), 1, 0);
+
+
+  return msgbufferTuple.tuple;
 
   return tuple;
 }
 
 void linda_init(){
-  key_t key = ftok("keyFile.txt", getpid());
+  key_t key = ftok("../Server/keyFile.txt", getpid());
   int msgid = msgget(key, IPC_CREAT);
 }
 
 void linda_close(){
-  key_t key = ftok("keyFile.txt", getpid());
+  key_t key = ftok("../Server/keyFile.txt", getpid());
   int msgid = msgget(key, 0666);
   msgctl(msgid, IPC_RMID, NULL);
 }

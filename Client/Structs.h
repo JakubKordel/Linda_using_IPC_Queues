@@ -48,4 +48,16 @@ struct Msg
     key_t key;
 };
 
+struct msgbufMsg {
+    long mtype;
+    Msg msg;
+};
+
+struct msgbufTuple {
+    long mtype;       /* typ wiadomości, musi być > 0 */
+    Tuple tuple;    /* dane wiadomości */
+};
+
+
+
 #endif //UNIX_PROJEKT_STRUCTS_H

@@ -23,7 +23,7 @@ public:
   //msgget(): either returns the message queue identifier for a newly created message queue or returns the identifiers for a queue which exists with the same key value.
   //msgsnd(): Data is placed on to a message queue by calling msgsnd().
   //msgrcv(): messages are retrieved from a queue.
-  //msgctl(): It performs various operations on a queue. Generally it is use to destroy message queue.
+  //msgctl(): It performs various operations on a queMsgue. Generally it is use to destroy message queue.
 
   Server(){
        key_t mainqueue_key = ftok("keyFile.txt", 0);
@@ -33,6 +33,7 @@ public:
   void run(){
     for ( ; ; ) {
       struct Msg msg = recieve();
+      std::cout << msg.option << std::endl;
       handleMsg(msg);
     }
 
@@ -41,9 +42,10 @@ public:
 private:
 
   struct Msg recieve(){
-    struct Msg msg;
-    msgrcv(msgid, &msg, sizeof(struct Msg), 1, 0); // take data from main queue
-    return msg;
+    struct msgbufMsg msgbuffer;
+    std::cout << "waiting for next msg" << std::endl;
+    msgrcv(msgid, &msgbuffer, sizeof(struct msgbufMsg), 1, 0); // take data from main queue
+    return msgbuffer.msg;
   }
 
   void handleMsg(struct Msg msg){
@@ -73,7 +75,7 @@ private:
   void handleRequest(struct Msg msg){
       for (auto i = tuplesList.begin(); i < tuplesList.end() ; ++i){
         if (compareTupleWithPattern(*i, msg.req.pattern)){
-          returnTuple(msg.key, *i); 
+          returnTuple(msg.key, *i);
           if (msg.option == 1) {
             tuplesList.erase(i);
           }
@@ -194,8 +196,11 @@ private:
   }
 
   void returnTuple(key_t client_key, struct Tuple tuple){
-    int client_msgid = msgget(client_key, 0666 | IPC_CREAT); //get users input queue
-    msgsnd(client_msgid, &tuple, sizeof(struct Tuple), 0);
+    int client_msgid = msgget(client_key, 0666); //get users input queue
+    msgbufTuple msgbuf;
+    msgbuf.mtype = 1;
+    msgbuf.tuple = tuple;
+    msgsnd(client_msgid, &msgbuf, sizeof(struct msgbufTuple), 0);
   }
 };
 
