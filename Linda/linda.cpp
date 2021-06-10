@@ -34,6 +34,7 @@ struct Tuple linda_input(struct Pattern pattern, int timeout){
 
   msgsnd(server_msgid, &msg, sizeof(struct Msg), 0);
   msgrcv(client_msgid, &tuple, sizeof(struct Tuple), 1, 0);
+  return tuple;
 
 }
 
@@ -54,6 +55,7 @@ struct Tuple linda_read(struct Pattern pattern, int timeout){
 
   msgsnd(server_msgid, &msg, sizeof(struct Msg), 0);
   msgrcv(client_msgid, &tuple, sizeof(struct Tuple), 1, 0);
+  return tuple;
 }
 
 void linda_init(){
