@@ -6,11 +6,11 @@ void print_tuple(Tuple tuple);
 
 int main()
 {
-    Parser parser;
     Msg msg;
     linda_init();
     std::string request;
     int timeout;
+    char c;
 
     while(1)
     {
@@ -19,16 +19,18 @@ int main()
         if(request.empty())
             break;
 
-        parser = Parser(request);
+        Parser parser = Parser(request);
         msg = parser.parse();
 
         if(msg.option == 0 || msg.option == 1)
         {
             std::cout << "Input timeout: ";
             std::cin >> timeout;
+            while(std::cin.get(c) && c != '\n');
+
             if(timeout < 1)
             {
-                std::cout << "Expected timeout value - integer > 0";
+                std::cout << "Expected timeout value - integer > 0\n";
                 return 1;
             }
         }
@@ -65,10 +67,9 @@ void print_tuple(Tuple tuple)
     for(int i = 0; i < tuple.tel_amount; i++)
     {
         if(first)
-        {
-            std::cout << ", ";
             first = false;
-        }
+        else
+            std::cout << ", ";
         
         switch(tuple.tel[i].type)
         {
@@ -85,4 +86,6 @@ void print_tuple(Tuple tuple)
             break;
         }
     }
+
+    std::cout << ")\n";
 }
