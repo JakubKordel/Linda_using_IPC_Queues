@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=c++11 -fno-stack-protector
 TARGET = server
 
 $(TARGET): main.o
