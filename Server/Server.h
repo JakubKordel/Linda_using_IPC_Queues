@@ -48,7 +48,7 @@ private:
     struct msgbufMsg msgbuffer;
     std::cout << "waiting for next msg" << std::endl;
     msgrcv(msgid, &msgbuffer, sizeof(struct msgbufMsg), 1, 0); // take data from main queue
-    return msgbuffer.msg;
+    return msgbuffer.mtext;
   }
 
   void handleMsg(struct Msg msg){
@@ -232,7 +232,7 @@ private:
     int client_msgid = msgget(client_key, 0); //get users input queue
     msgbufTuple msgbuf;
     msgbuf.mtype = 1;
-    msgbuf.tuple = tuple;
+    msgbuf.mtext = tuple;
     std::cout << "sending msg to client gid: " << client_msgid << std::endl;
     msgsnd(client_msgid, &msgbuf, sizeof(struct msgbufTuple), 0);
   }
@@ -241,17 +241,16 @@ private:
     for (auto i = unhandledRequests.begin(); i != unhandledRequests.end() ; ++i){
       if (i->key == client_key){
         unhandledRequests.erase(i);
+        break;
       }
     }
   }
 
   void sendTimeout(key_t client_key){
-    struct Tuple tuple;
-    tuple.tel_amount = -1;
     int client_msgid = msgget(client_key, 0); //get users input queue
     msgbufTuple msgbuf;
     msgbuf.mtype = 1;
-    msgbuf.tuple = tuple;
+    msgbuf.mtext.tel_amount = -1;
     std::cout << "sending timeout to client gid: " << client_msgid << std::endl;
     msgsnd(client_msgid, &msgbuf, sizeof(struct msgbufTuple), 0);
   }

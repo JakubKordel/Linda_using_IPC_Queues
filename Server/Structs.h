@@ -48,12 +48,12 @@ struct Msg
 
 struct msgbufMsg {
     long mtype;
-    Msg msg;
+    Msg mtext;
 };
 
 struct msgbufTuple {
     long mtype;       /* typ wiadomości, musi być > 0 */
-    Tuple tuple;    /* dane wiadomości */
+    Tuple mtext;    /* dane wiadomości */
 };
 
 #endif //UNIX_PROJEKT_STRUCTS_H
