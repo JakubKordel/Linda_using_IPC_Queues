@@ -5,14 +5,14 @@
 #include <sys/types.h>
 #include <iostream>
 
-void sleep_timeout(int timeout, key_t key){
+void sleep_timeout(int timeout, key_t server_key, key_t client_key){
   
   sleep(timeout);
   msgbufMsg msgbuffer;
   msgbuffer.mtype = 1;
   msgbuffer.msg.option = 3;
-  msgbuffer.msg.key = key;
-  msgsnd(key, &msgbuffer, sizeof(struct msgbufMsg), 0);
+  msgbuffer.msg.key = client_key;
+  msgsnd(server_key, &msgbuffer, sizeof(struct msgbufMsg), 0);
   
 }
 
@@ -56,7 +56,7 @@ struct Tuple linda_input(struct Pattern pattern, int timeout){
 
   if(fork() == 0)
   {
-    sleep_timeout(timeout, server_msgid);
+    sleep_timeout(timeout, server_msgid, client_msgid);
     exit(0);
   }
 
@@ -88,7 +88,7 @@ struct Tuple linda_read(struct Pattern pattern, int timeout){
 
   if(fork() == 0)
   {
-    sleep_timeout(timeout, server_msgid);
+    sleep_timeout(timeout, server_msgid, client_msgid);
     exit(0);
   }
 
