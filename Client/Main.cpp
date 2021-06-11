@@ -1,6 +1,7 @@
 #include "Parser.h"
 #include <iostream>
 #include "linda.h"
+#include <limits>
 
 void print_tuple(Tuple tuple);
 
@@ -20,18 +21,36 @@ int main()
             break;
 
         Parser parser = Parser(request);
-        msg = parser.parse();
+        try
+        {
+            msg = parser.parse();
+        }
+        catch(const std::runtime_error& e)
+        {
+            std::cerr << e.what() << '\n';
+            continue;
+        }
 
         if(msg.option == 0 || msg.option == 1)
         {
             std::cout << "Input timeout: ";
-            std::cin >> timeout;
-            while(std::cin.get(c) && c != '\n');
-
-            if(timeout < 1)
+            while(1)
             {
-                std::cout << "Expected timeout value - integer > 0\n";
-                return 1;
+                std::cin >> timeout;
+                if(std::cin.fail())
+                {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cerr << "Expected timeout value - integer > 0; Enter valid value: ";
+                }
+                else
+                {
+                    while(std::cin.get(c) && c != '\n'){}
+                    if(timeout < 1)
+                        std::cerr << "Expected timeout value - integer > 0; Enter valid value: ";
+                    else
+                        break;
+                }
             }
         }
 
@@ -45,6 +64,7 @@ int main()
         }
         else                        // output
         {
+            print_tuple(msg.req.tuple);
             linda_output(msg.req.tuple);
             std::cout << "Tuple send" << std::endl;
         }
