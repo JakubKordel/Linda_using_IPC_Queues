@@ -2,30 +2,87 @@
 #include <iostream>
 #include "linda.h"
 
+void print_tuple(Tuple tuple);
+
 int main()
 {
-    std::string krotka = "output(1, \"abcd\", 4.5)";
-    std::string wzorzec = "input(integer:>=0, string:*, float:*)";
+    Parser parser;
+    Msg msg;
     linda_init();
-    std::cout << "Init Linda" << std::endl;
+    std::string request;
+    int timeout;
 
-    Parser parser = Parser(krotka);
-    Msg msg = parser.parse();
-    std::cout <<"Parsed tuple" << std::endl;
-    linda_output(msg.req.tuple);
-    std::cout << "Send tuple" << std::endl;
+    while(1)
+    {
+        std::cout << "Input tuple or pattern (in one line):" << std::endl;
+        getline(std::cin, request);
+        if(request.empty())
+            break;
 
-    parser = Parser(wzorzec);
-    Msg msg2 = parser.parse();
-    std::cout << "Parsed pattern" << std::endl;
-    Tuple tupl = linda_input(msg2.req.pattern, 0);
-    std::cout << "Send pattern and received tuple" << std::endl;
+        parser = Parser(request);
+        msg = parser.parse();
 
-    std::cout << tupl.tel_amount << " " << msg.req.tuple.tel_amount << std::endl;
-    std::cout << tupl.tel[0].type << " " << msg.req.tuple.tel[0].type << std::endl;
-    std::cout << tupl.tel[0].value.i << " " << msg.req.tuple.tel[0].value.i << std::endl;
-    
-    std::cout << "Close Linda" << std::endl;
+        if(msg.option == 0 || msg.option == 1)
+        {
+            std::cout << "Input timeout: ";
+            std::cin >> timeout;
+            if(timeout < 1)
+            {
+                std::cout << "Expected timeout value - integer > 0";
+                return 1;
+            }
+        }
+
+        if(msg.option == 0)         // read
+        {
+            print_tuple(linda_read(msg.req.pattern, timeout));
+        }
+        else if(msg.option == 1)    // input
+        {
+            print_tuple(linda_input(msg.req.pattern, timeout));
+        }
+        else                        // output
+        {
+            linda_output(msg.req.tuple);
+            std::cout << "Tuple send" << std::endl;
+        }
+    }
+
     linda_close();
     return 0;
+}
+
+void print_tuple(Tuple tuple)
+{
+    if(tuple.tel_amount == -1)
+    {
+        std::cout << "Timeout - no tuple matching given pattern" << std::endl;
+        return;
+    }
+
+    bool first = true;
+    std::cout << "Received tuple:\n(";
+    for(int i = 0; i < tuple.tel_amount; i++)
+    {
+        if(first)
+        {
+            std::cout << ", ";
+            first = false;
+        }
+        
+        switch(tuple.tel[i].type)
+        {
+        case 0:
+            std::cout << tuple.tel[i].value.i;
+            break;
+        
+        case 1:
+            std::cout << tuple.tel[i].value.s;
+            break;
+
+        default:
+            std::cout << tuple.tel[i].value.f;
+            break;
+        }
+    }
 }
