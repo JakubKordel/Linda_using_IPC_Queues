@@ -132,7 +132,7 @@ Request Parser::parse_pattern()
             else if(lexer.get_token().get_type() == addons::TokenType::STR_LITERAL)
             {
                 if(patternElement.type != 1)
-                    throw_parsing_error("expected string literal", lexer.get_token().get_position());
+                    throw_parsing_error("not expected string literal", lexer.get_token().get_position());
 
                 strcpy(patternElement.value.s, lexer.get_token().get_value_string());
                 i = patternElement;
@@ -141,7 +141,7 @@ Request Parser::parse_pattern()
             else if(lexer.get_token().get_type() == addons::TokenType::INT_LITERAL)
             {
                 if(patternElement.type != 0)
-                    throw_parsing_error("expected int literal", lexer.get_token().get_position());
+                    throw_parsing_error("not expected int literal", lexer.get_token().get_position());
 
                 patternElement.value.i = lexer.get_token().get_value_integer();
                 i = patternElement;
@@ -150,7 +150,7 @@ Request Parser::parse_pattern()
             else if(lexer.get_token().get_type() == addons::TokenType::FLOAT_LITERAL)
             {
                 if(patternElement.type != 2)
-                    throw_parsing_error("expected float literal", lexer.get_token().get_position());
+                    throw_parsing_error("not expected float literal", lexer.get_token().get_position());
 
                 if(patternElement.condition == 0)
                     throw_parsing_error("== condition is not available for float type",

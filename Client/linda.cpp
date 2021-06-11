@@ -5,13 +5,13 @@
 #include <sys/types.h>
 #include <iostream>
 
-void sleep_timeout(int timeout, key_t server_key, key_t client_key){
+void sleep_timeout(int timeout, int server_key, key_t client_key){
   
   sleep(timeout);
   msgbufMsg msgbuffer;
   msgbuffer.mtype = 1;
-  msgbuffer.msg.option = 3;
-  msgbuffer.msg.key = client_key;
+  msgbuffer.mtext.option = 3;
+  msgbuffer.mtext.key = client_key;
   msgsnd(server_key, &msgbuffer, sizeof(struct msgbufMsg), 0);
   
 }
@@ -27,7 +27,7 @@ void linda_output(struct Tuple tuple){
 
   msgbufMsg msgbuffer;
   msgbuffer.mtype = 1;
-  msgbuffer.msg = msg;
+  msgbuffer.mtext = msg;
   msgsnd(msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
 
 }
@@ -48,7 +48,7 @@ struct Tuple linda_input(struct Pattern pattern, int timeout){
 
   msgbufMsg msgbuffer;
   msgbuffer.mtype = 1;
-  msgbuffer.msg = msg;
+  msgbuffer.mtext = msg;
 
   msgsnd(server_msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
 
@@ -56,13 +56,13 @@ struct Tuple linda_input(struct Pattern pattern, int timeout){
 
   if(fork() == 0)
   {
-    sleep_timeout(timeout, server_msgid, client_msgid);
+    sleep_timeout(timeout, server_msgid, client_key);
     exit(0);
   }
 
   msgrcv(client_msgid, &msgbufferTuple, sizeof(struct msgbufTuple), 1, 0);
 
-  return msgbufferTuple.tuple;
+  return msgbufferTuple.mtext;
 }
 
 struct Tuple linda_read(struct Pattern pattern, int timeout){
@@ -80,7 +80,7 @@ struct Tuple linda_read(struct Pattern pattern, int timeout){
 
   msgbufMsg msgbuffer;
   msgbuffer.mtype = 1;
-  msgbuffer.msg = msg;
+  msgbuffer.mtext = msg;
 
   msgsnd(server_msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
 
@@ -88,13 +88,13 @@ struct Tuple linda_read(struct Pattern pattern, int timeout){
 
   if(fork() == 0)
   {
-    sleep_timeout(timeout, server_msgid, client_msgid);
+    sleep_timeout(timeout, server_msgid, client_key);
     exit(0);
   }
 
   msgrcv(client_msgid, &msgbufferTuple, sizeof(struct msgbufTuple), 1, 0);
 
-  return msgbufferTuple.tuple;
+  return msgbufferTuple.mtext;
 }
 
 void linda_init(){
