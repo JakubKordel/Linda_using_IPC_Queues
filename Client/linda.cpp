@@ -5,6 +5,17 @@
 #include <sys/types.h>
 #include <iostream>
 
+void sleep_timeout(int timeout, key_t key){
+  
+  sleep(timeout);
+  msgbufMsg msgbuffer;
+  msgbuffer.mtype = 1;
+  msgbuffer.msg.option = 3;
+  msgbuffer.msg.key = key;
+  msgsnd(key, &msgbuffer, sizeof(struct msgbufMsg), 0);
+  
+}
+
 void linda_output(struct Tuple tuple){
 
   Msg msg;
@@ -24,11 +35,8 @@ void linda_output(struct Tuple tuple){
 
 struct Tuple linda_input(struct Pattern pattern, int timeout){
 
-  Tuple tuple;
-
   key_t client_key = ftok("../Server/keyFile.txt", getpid());
   int client_msgid = msgget(client_key, 0);
-  std::cout << "Msggid: " << client_msgid << std::endl;
 
   Msg msg;
   msg.option = 1;
@@ -45,19 +53,22 @@ struct Tuple linda_input(struct Pattern pattern, int timeout){
   msgsnd(server_msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
 
   msgbufTuple msgbufferTuple;
-  msgrcv(client_msgid, &msgbufferTuple, sizeof(struct msgbufTuple), 1, 0);
 
+  if(fork() == 0)
+  {
+    sleep_timeout(timeout, server_msgid);
+    exit(0);
+  }
+
+  msgrcv(client_msgid, &msgbufferTuple, sizeof(struct msgbufTuple), 1, 0);
 
   return msgbufferTuple.tuple;
 }
 
 struct Tuple linda_read(struct Pattern pattern, int timeout){
 
-  Tuple tuple;
-
   key_t client_key = ftok("../Server/keyFile.txt", getpid());
   int client_msgid = msgget(client_key, 0);
-  std::cout << "Msggid: " << client_msgid << std::endl;
 
   Msg msg;
   msg.option = 0;
@@ -74,23 +85,25 @@ struct Tuple linda_read(struct Pattern pattern, int timeout){
   msgsnd(server_msgid, &msgbuffer, sizeof(struct msgbufMsg), 0);
 
   msgbufTuple msgbufferTuple;
+
+  if(fork() == 0)
+  {
+    sleep_timeout(timeout, server_msgid);
+    exit(0);
+  }
+
   msgrcv(client_msgid, &msgbufferTuple, sizeof(struct msgbufTuple), 1, 0);
 
-
   return msgbufferTuple.tuple;
-
-  return tuple;
 }
 
 void linda_init(){
   key_t key = ftok("../Server/keyFile.txt", getpid());
   int msgid = msgget(key, 0666 | IPC_CREAT);
-  std::cout << "Msggid: " << msgid << std::endl;
 }
 
 void linda_close(){
   key_t key = ftok("../Server/keyFile.txt", getpid());
   int msgid = msgget(key, 0);
-  std::cout << "Msggid: " << msgid << std::endl;
   msgctl(msgid, IPC_RMID, NULL);
 }

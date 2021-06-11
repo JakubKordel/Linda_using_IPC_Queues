@@ -144,6 +144,7 @@ private:
                 }
                 break;
             }
+            break;
         case 1: // <
             switch (pattern.pel[i].type) {
             case 0: // integer
