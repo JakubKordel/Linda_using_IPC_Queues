@@ -64,7 +64,6 @@ int main()
         }
         else                        // output
         {
-            print_tuple(msg.req.tuple);
             linda_output(msg.req.tuple);
             std::cout << "Tuple send" << std::endl;
         }
