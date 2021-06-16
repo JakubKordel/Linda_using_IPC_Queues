@@ -87,17 +87,20 @@ private:
 
 
   void handleNewTuple(struct Tuple tuple){
-        for (auto i = unhandledRequests.begin(); i != unhandledRequests.end() ; ++i){
+        for (auto i = unhandledRequests.begin(); i != unhandledRequests.end() ;){
           if (compareTupleWithPattern(tuple, i->req.pattern) ){
               std::cout << "Returning tuple" << std::endl;
               returnTuple(i->key, tuple);
-              unhandledRequests.erase(i);
               setHandledRequest(i->key);
               if (i->option == 1){ //option input
                 tuplesList.pop_back();
+                unhandledRequests.erase(i);
+                return;
               }
-              return;
+              unhandledRequests.erase(i);
           }
+          else
+              ++i;
         }
   }
 
