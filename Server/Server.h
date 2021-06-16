@@ -95,8 +95,8 @@ private:
               setHandledRequest(i->key);
               if (i->option == 1){ //option input
                 tuplesList.pop_back();
-                return;
               }
+              return;
           }
         }
   }
